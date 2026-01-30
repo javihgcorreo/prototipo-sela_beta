@@ -1,0 +1,39 @@
+Guion de Pruebas para SELA
+1. Verificar salud del servicio principal
+
+Invoke-WebRequest -Uri "http://localhost:8000/health"
+Explicación:
+Muestra el estado del servicio principal y la conectividad con los microservicios de anonimización y auditoría.
+
+2. Verificar estado de los microservicios dependientes
+
+Invoke-WebRequest -Uri "http://localhost:8000/estado-servicios"
+Explicación:
+Muestra el estado y tiempo de respuesta de los servicios de anonimización y auditoría.
+
+3. Mostrar información y endpoints disponibles
+
+Invoke-WebRequest -Uri "http://localhost:8000/info"
+Explicación:
+Presenta la descripción del servicio, versión y los endpoints disponibles para el usuario.
+
+4. Demostrar el pipeline completo de procesamiento
+
+Invoke-WebRequest -Uri "http://localhost:8000/procesar" -Method POST -ContentType "application/json" -Body '{"data":"Texto de prueba para SELA"}'
+Explicación:
+Envía datos al pipeline SELA. El servicio principal:
+
+Llama al microservicio de anonimización para procesar los datos.
+Registra la operación en el microservicio de auditoría.
+Devuelve el resultado final, mostrando el flujo completo y la integración.
+5. Revisar los logs (opcional)
+
+docker compose logs servicio-sela
+Explicación:
+Muestra la actividad interna y posibles errores para demostrar la trazabilidad.
+
+Cómo explicarlo en la presentación
+Arquitectura: Explica que SELA coordina dos microservicios y una base de datos, todo orquestado con Docker Compose.
+Salud y monitoreo: Muestra cómo se verifica el estado de cada componente.
+Pipeline: Demuestra cómo un dato pasa por anonimización y auditoría, y cómo el usuario recibe el resultado.
+Escalabilidad y modularidad: Explica que cada servicio puede evolucionar de forma independiente.

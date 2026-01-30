@@ -1,0 +1,61 @@
+#version: '3.8'
+
+services:
+  # Servicio Principal SELA
+  servicio-sela:
+    build: ./servicio-sela
+    container_name: sela-main
+    ports:
+      - "8000:8000"
+    environment:
+      - ANONIMIZACION_SERVICE_URL=http://servicio-anonimizacion:8001
+      - AUDITORIA_SERVICE_URL=http://servicio-auditoria:8002
+    depends_on:
+      - servicio-anonimizacion
+      - servicio-auditoria
+    networks:
+      - sela-network
+
+  # Servicio de Anonimización
+  servicio-anonimizacion:
+    build: ./servicio-anonimizacion
+    container_name: sela-anonimizacion
+    ports:
+      - "8001:8001"
+    networks:
+      - sela-network
+
+  # Servicio de Auditoría
+  servicio-auditoria:
+    build: ./servicio-auditoria
+    container_name: sela-auditoria
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://auditoria_user:auditoria_pass@postgres:5432/auditoria_db
+    depends_on:
+      - postgres
+    networks:
+      - sela-network
+
+  # Base de datos PostgreSQL para auditoría
+  postgres:
+    image: postgres:15
+    container_name: sela-postgres
+    environment:
+      - POSTGRES_DB=auditoria_db
+      - POSTGRES_USER=auditoria_user
+      - POSTGRES_PASSWORD=auditoria_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sela-network
+
+networks:
+  sela-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
