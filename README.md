@@ -23,7 +23,7 @@ Sigue estos pasos en tu terminal para desplegar el entorno completo y ejecutar l
 Primero, descarga el repositorio desde GitHub y accede a la carpeta del proyecto:
 
 ```powershell
-git clone https://github.com/tu-usuario/nombre-del-repo-tfm.git
+git clone https://github.com/javihgcorreo/prototipo-sela_beta/
 cd nombre-del-repo-tfm
 
 ```
