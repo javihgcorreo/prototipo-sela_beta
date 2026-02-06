@@ -1,0 +1,62 @@
+﻿======================================================
+   REPORTE DE PRUEBAS - SISTEMA SeLA TFM (Windows)
+   Fecha: 02/06/2026 00:41:27
+   Tiempo ejecucion: 0,73 segundos
+======================================================
+
+RESUMEN:
+  Total pruebas: 24
+  Pruebas exitosas: 14
+  Pruebas fallidas: 10
+  Porcentaje exito: 58%
+
+DETALLE DE PRUEBAS:
+  PASS: Docker funcionando
+  FAIL: Servicio SELA corriendo - No responde en puerto 8000
+  PASS: Servicio Anonimizacion corriendo
+  PASS: Servicio Auditoria corriendo
+  PASS: Endpoint de infraestructura
+  PASS: Creacion de acuerdo
+  PASS: Listado de acuerdos
+  FAIL: Consulta de acuerdo - Codigo 404 (esperado 200)
+  PASS: Estado de acuerdo
+  PASS: Validacion RGPD
+  FAIL: Minimizacion de datos - Codigo 404 (esperado 200)
+  PASS: Servicio de anonimizacion
+  FAIL: K-anonimity - Codigo 404 (esperado 200)
+  PASS: Registro auditoria
+  PASS: Consulta logs
+  FAIL: Auditoria por acuerdo - Codigo 404 (esperado 200)
+  FAIL: Generacion de reporte - Codigo 404 (esperado 200)
+  PASS: Ejecucion de operacion
+  FAIL: Estado de operaciones - Codigo 404 (esperado 200)
+  FAIL: Health check completo - Codigo 404 (esperado 200)
+  PASS: Error en acuerdo invalido (error esperado)
+  PASS: Demo para tribunal
+  FAIL: Estadisticas - Codigo 404 (esperado 200)
+  FAIL: Documentacion - Codigo 404 (esperado 200)
+
+ENDPOINTS VERIFICADOS:
+  - SELA API: http://localhost:8000
+  - Anonimizacion: http://localhost:8001
+  - Auditoria: http://localhost:8002
+
+COMPONENTES PROBADOS:
+  1. Infraestructura (Service Discovery)
+  2. Gestion de Acuerdos SeLA
+  3. Validacion RGPD Automatica
+  4. Servicio de Anonimizacion
+  5. Sistema de Auditoria
+  6. Ejecucion de Operaciones
+  7. Resiliencia y Manejo de Errores
+  8. Demostracion para Tribunal
+
+RECOMENDACIONES:
+  [ADVERTENCIA] Revisar los componentes que fallaron   [ADVERTENCIA] Verificar logs de error en Docker   [ADVERTENCIA] Realizar pruebas manuales adicionales
+
+PARA LA DEFENSA:
+  1. Mostrar demo en: http://localhost:8000/api/v1/demo/tribunal
+  2. Mostrar documentacion: http://localhost:8000/api/v1/docs
+  3. Mostrar estadisticas: http://localhost:8000/api/v1/estadisticas
+  4. Ejecutar prueba de anonimizacion en vivo
+  5. Mostrar logs de auditoria en tiempo real

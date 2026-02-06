@@ -34,7 +34,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://auditoria_user:auditoria_pass@postgres:5432/auditoria_db
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy # cambio importante
     networks:
       - sela-network
 
@@ -46,12 +47,29 @@ services:
       - POSTGRES_DB=auditoria_db
       - POSTGRES_USER=auditoria_user
       - POSTGRES_PASSWORD=auditoria_pass
+      - DATABASE_URL=postgresql://auditoria_user:auditoria_pass@postgres:5432/auditoria_db
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=8002
+      - FLASK_DEBUG=False
+      - BLOCKCHAIN_ENABLED=true              # <-- NUEVA
+      - BLOCKCHAIN_DIFFICULTY=4              # <-- NUEVA
+      - BLOCKCHAIN_REWARD=1                   # <-- NUEVA
+      - APP_NAME=Servicio de Auditoría        # <-- NUEVA
+      - APP_VERSION=2.0.0                     # <-- NUEVA
+      - APP_DESCRIPTION=Microservicio para auditoría y logging de operaciones con integración blockchain # <-- NUEVA
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - sela-network
+    healthcheck:  # <-- Agregar healthcheck
+      test: ["CMD-SHELL", "pg_isready -U auditoria_user -d auditoria_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped  # <-- Agregar restart policy
 
 networks:
   sela-network:

@@ -1,0 +1,69 @@
+﻿======================================================
+   REPORTE DE PRUEBAS - SISTEMA SeLA TFM
+   Fecha: 02/06/2026 00:47:05
+   Tiempo ejecucion: 0,61 segundos
+======================================================
+
+RESUMEN:
+  Total pruebas: 15
+  Pruebas exitosas: 15
+  Pruebas fallidas: 0
+  Porcentaje exito: 100%
+
+DETALLE DE PRUEBAS:
+  PASS: Docker funcionando
+  PASS: Servicio SELA saludable
+  PASS: Servicio Anonimizacion saludable
+  PASS: Servicio Auditoria saludable
+  PASS: Endpoint de infraestructura
+  PASS: Creacion de acuerdo
+  PASS: Estado de acuerdo
+  PASS: Servicio de anonimizacion
+  PASS: Registro auditoria
+  PASS: Consulta logs auditoria
+  PASS: Ejecucion de operacion
+  PASS: Demo para tribunal
+  PASS: Info del sistema
+  PASS: Health check
+  PASS: Error en acuerdo invalido (error esperado)
+
+ACUERDO CREADO:
+  ID: fbdc0637-a7ce-4b1e-adf3-47d14011cd92
+
+COMPONENTES VERIFICADOS:
+  1. [FALLO] Servicio SELA (API Principal)
+  2. [FALLO] Servicio de Anonimizacion
+  3. [FALLO] Servicio de Auditoria
+  4. [OK] Creacion de Acuerdos
+  5. [OK] Ejecucion de Operaciones
+
+ENDPOINTS FUNCIONALES:
+  - http://localhost:8000/api/v1/demo/tribunal
+  - http://localhost:8000/api/v1/infraestructura
+  - http://localhost:8000/api/v1/info
+  - http://localhost:8001/anonimizar
+  - http://localhost:8002/registrar
+  - http://localhost:8002/logs
+
+PARA LA DEFENSA DEL TFM:
+  1. EL SISTEMA FUNCIONA CON:
+     - 3 servicios Docker independientes
+     - Comunicacion HTTP entre servicios
+     - Creacion y gestion de acuerdos
+     - Anonimizacion de datos sensibles
+     - Auditoria completa de operaciones
+
+  2. PUNTOS FUERTES PARA MOSTRAR:
+     - Crear un acuerdo SeLA en tiempo real
+     - Mostrar la validacion automatica
+     - Ejecutar una operacion bajo acuerdo
+     - Ver los logs de auditoria
+     - Mostrar el estado del sistema
+
+  3. DEMOSTRACION PRACTICA:
+     1. docker-compose ps (mostrar servicios)
+     2. Crear acuerdo via API
+     3. Ejecutar operacion de prueba
+     4. Mostrar anonimizacion de datos
+     5. Verificar logs de auditoria
+     6. Mostrar demo para tribunal

@@ -1,0 +1,320 @@
+# Prototipo SELA - Sistema de Microservicios para Gestión de Datos
+
+## 📋 Descripción
+**SELA** (Sistema de E-Learning Avanzado) es un prototipo de arquitectura de microservicios diseñado para gestionar datos educativos con funcionalidades de anonimización y auditoría. El sistema permite procesar información sensible manteniendo trazabilidad completa de todas las operaciones realizadas.
+
+## 🏗️ Arquitectura
+
+```
+prototipo-sela_beta/
+├── servicio-sela/              # Servicio principal de coordinación (Puerto 8000)
+├── servicio-anonimizacion/     # Servicio de tratamiento de datos sensibles (Puerto 8001)
+├── servicio-auditoria/         # Servicio de registro y trazabilidad (Puerto 8002)
+├── actualizar-sela.ps1         # Script de automatización para despliegue (Windows)
+├── docker-compose.yml          # Orquestación de todos los servicios
+├── guionTestPrueba.txt         # Scripts SQL para pruebas y validación
+└── README.md                   # Este archivo
+```
+
+## 🚀 Comenzando
+
+### Prerrequisitos
+- **Docker** versión 20.10 o superior
+- **Docker Compose** versión 2.0 o superior
+- **Git** para clonar el repositorio
+- (Opcional) **Python 3.12.5** para desarrollo local
+
+### Instalación Rápida
+
+#### Opción 1: Usando Docker Compose (Recomendado)
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/javihgcorreo/prototipo-sela_beta.git
+cd prototipo-sela_beta
+
+# 2. Iniciar todos los servicios
+docker-compose up --build
+
+# 3. Verificar que los servicios están funcionando
+docker-compose ps
+```
+
+#### Opción 2: Usando el Script de Automatización (Windows)
+```powershell
+# Ejecutar el script de comprobación
+.\comprobarservicios-sela.ps1
+
+# El script realizará automáticamente: la comprobación de los servicios
+
+```
+
+#### Opción 3: Desarrollo Local (Sin Docker)
+```bash
+# Para cada servicio, ejecutar:
+cd servicio-sela
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+```
+
+## 📡 Servicios y Endpoints
+
+### 🔹 Servicio Principal SELA (Puerto 8000)
+**Responsabilidad**: Coordinación principal y gateway de operaciones.
+
+**Endpoints principales**:
+- `GET /` - Estado del servicio
+- `POST /procesar` - Iniciar procesamiento de datos
+- `GET /estado/<id_proceso>` - Consultar estado de procesamiento
+
+### 🔹 Servicio de Anonimización (Puerto 8001)
+**Responsabilidad**: Tratamiento y anonimización de datos sensibles.
+
+**Endpoints principales**:
+- `POST /anonimizar` - Anonimizar conjunto de datos
+- `GET /tecnicas` - Listar técnicas de anonimización disponibles
+- `POST /validar` - Validar calidad de anonimización
+
+### 🔹 Servicio de Auditoría (Puerto 8002)
+**Responsabilidad**: Registro y trazabilidad de todas las operaciones.
+
+**Endpoints principales**:
+- `POST /registrar` - Registrar nueva operación
+- `GET /historial` - Consultar historial de operaciones
+- `GET /reporte/<fecha>` - Generar reporte por fecha
+
+## 🗄️ Base de Datos
+
+El sistema utiliza **PostgreSQL** para almacenar registros de auditoría:
+
+- **Contenedor**: `postgres:15-alpine`
+- **Puerto**: 5432
+- **Base de datos**: `auditoria_db`
+- **Usuario**: `auditoria_user`
+- **Contraseña**: `auditoria_pass` *(¡Cambiar en producción!)*
+
+### Estructura de la base de datos:
+```sql
+-- Ejemplo de consulta (ver guionTestPrueba.txt completo)
+SELECT * FROM operaciones_auditoria 
+WHERE fecha >= NOW() - INTERVAL '1 day';
+```
+
+## 🔧 Configuración
+
+### Variables de Entorno
+Crea un archivo `.env` en la raíz del proyecto:
+
+```env
+# Servicio SELA
+SELA_HOST=0.0.0.0
+SELA_PORT=8000
+
+# Servicio Anonimización
+ANON_HOST=0.0.0.0
+ANON_PORT=8001
+
+# Servicio Auditoría
+AUDIT_HOST=0.0.0.0
+AUDIT_PORT=8002
+
+# Base de Datos PostgreSQL
+POSTGRES_USER=auditoria_user
+POSTGRES_PASSWORD=tu_password_seguro  # ¡CAMBIAR!
+POSTGRES_DB=auditoria_db
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+```
+
+### Configuración de Docker Compose
+El archivo `docker-compose.yml` define:
+- 4 contenedores interconectados
+- Redes aisladas para comunicación interna
+- Volúmenes persistentes para la base de datos
+- Health checks para monitoreo
+
+## 🧪 Pruebas y Validación
+
+### Pruebas Automatizadas
+```bash
+# Ejecutar suite de pruebas
+docker-compose exec servicio-sela python -m pytest tests/
+
+# Ver logs en tiempo real
+docker-compose logs --follow servicio-sela
+
+# Probar conectividad entre servicios
+docker-compose exec servicio-sela curl http://servicio-anonimizacion:8001/health
+```
+
+### Pruebas Manuales con cURL
+```bash
+# Verificar estado del servicio principal
+curl http://localhost:8000/
+
+# Procesar datos de ejemplo
+curl -X POST http://localhost:8000/procesar \
+  -H "Content-Type: application/json" \
+  -d '{"datos": "ejemplo", "accion": "anonimizar"}'
+
+# Consultar historial de auditoría
+curl http://localhost:8002/historial
+```
+
+### Scripts de Prueba SQL
+El archivo `guionTestPrueba.txt` contiene consultas SQL preparadas para:
+- Inserción de datos de prueba
+- Validación de integridad referencial
+- Generación de reportes de auditoría
+
+## 📦 Dependencias
+
+### Servicio SELA (`servicio-sela/`)
+```txt
+Flask==2.3.3
+requests==2.31.0
+psycopg2-binary==2.9.7
+python-dotenv==1.0.0
+```
+
+### Servicio Anonimización (`servicio-anonimizacion/`)
+```txt
+Flask==2.3.3
+pandas==2.0.3
+numpy==1.24.3
+scikit-learn==1.3.0
+```
+
+### Servicio Auditoría (`servicio-auditoria/`)
+```txt
+Flask==2.3.3
+psycopg2-binary==2.9.7
+SQLAlchemy==2.0.19
+```
+
+## 🔄 Script de Automatización
+
+El script `actualizar-sela.ps1` proporciona automatización completa:
+
+```powershell
+# Uso básico
+.\actualizar-sela.ps1
+
+# Funcionalidades:
+# 1. Actualización automática del código desde Git
+# 2. Reconstrucción inteligente de imágenes Docker
+# 3. Reinicio controlado de contenedores
+# 4. Verificación de salud de servicios
+# 5. Limpieza de recursos no utilizados
+```
+
+## 🐛 Solución de Problemas
+
+### Problemas Comunes y Soluciones
+
+| Problema | Causa Probable | Solución |
+|----------|----------------|----------|
+| Error de conexión a PostgreSQL | Contenedor no iniciado | `docker-compose restart postgres` |
+| Puerto ya en uso | Otro servicio usando el puerto | Cambiar puertos en `.env` |
+| Error de dependencias | Cache de Docker obsoleto | `docker-compose build --no-cache` |
+| Permisos denegados | Problemas con volúmenes Docker | `sudo chmod -R 755 ./data` |
+
+### Comandos de Depuración Útiles
+```bash
+# Ver logs específicos de un servicio
+docker-compose logs servicio-sela --tail=50
+
+# Inspeccionar estado de contenedores
+docker-compose ps
+
+# Acceder a shell dentro de un contenedor
+docker-compose exec servicio-sela sh
+
+# Ver uso de recursos
+docker-compose stats
+
+# Limpiar recursos no utilizados
+docker-compose down -v  # ¡Cuidado: elimina volúmenes!
+```
+
+## 📊 Monitoreo y Métricas
+
+### Endpoints de Salud
+Cada servicio expone endpoints de monitoreo:
+- `GET /health` - Estado general del servicio
+- `GET /metrics` - Métricas de rendimiento
+- `GET /info` - Información de versión y configuración
+
+### Métricas Recomendadas
+- Tiempo de respuesta por endpoint
+- Tasa de éxito de operaciones
+- Uso de memoria y CPU por contenedor
+- Conexiones activas a PostgreSQL
+
+## 🔒 Seguridad
+
+### Buenas Prácticas Implementadas
+1. **Comunicación interna aislada** entre contenedores
+2. **Credenciales separadas** por servicio
+3. **Logs estructurados** sin información sensible
+4. **Validación de entrada** en todos los endpoints
+
+### Configuraciones de Seguridad Críticas
+```yaml
+# EN PRODUCCIÓN, SIEMPRE:
+# 1. Usar variables de entorno reales, no valores hardcodeados
+# 2. Implementar autenticación entre servicios
+# 3. Configurar HTTPS/TLS para comunicación externa
+# 4. Regular acceso a la base de datos con IP filtering
+# 5. Rotar credenciales regularmente
+```
+
+## 🤝 Contribución
+
+### Flujo de Trabajo
+1. Fork del repositorio
+2. Crear rama de feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit de cambios (`git commit -m 'Añadir nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Crear Pull Request
+
+### Estándares de Código
+- Usar nombres descriptivos para variables y funciones
+- Comentar código complejo
+- Mantener cobertura de tests > 80%
+- Seguir PEP 8 para Python
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 📞 Soporte y Contacto
+
+- **Issues**: Reportar bugs o solicitar features en [GitHub Issues](https://github.com/javihgcorreo/prototipo-sela_beta/issues)
+- **Email**: [Tu email o contacto]
+- **Documentación**: Actualizaciones en [wiki del repositorio]
+
+---
+
+## 🚨 Notas Importantes
+
+1. **Este es un prototipo** - No usar en producción sin las debidas revisiones de seguridad
+2. **Credenciales por defecto** - Cambiar todas las contraseñas antes de despliegue
+3. **Monitoreo recomendado** - Implementar sistema de alertas para producción
+4. **Backups esenciales** - Configurar backups regulares de la base de datos
+
+## 🔄 Historial de Versiones
+
+- **v1.0.0** (04/02/2026): Versión inicial del prototipo
+  - 3 microservicios básicos
+  - Integración con PostgreSQL
+  - Script de automatización PowerShell
+
+---
+
+*Última actualización: 4 de Febrero de 2026*  
+*Estado del proyecto: Prototipo Beta*  
+*Próximas features: Autenticación JWT, Dashboard de monitoreo, API GraphQL*
+
+¿Necesitas que ajuste alguna sección específica o que añada más detalles sobre algún componente?
