@@ -320,7 +320,7 @@ $errorJson = '{
     "tipo_datos": "invalido"
 }'
 
-Test-Endpoint -Name "Error en acuerdo invalido" -Method "POST" -Url "http://localhost:8000/api/v1/acuerdo/crear" -Body $errorJson -ExpectedCode 400
+Test-Endpoint -Name "Error en acuerdo invalido" -Method "POST" -Url "http://localhost:8000/api/v1/acuerdo/crear" -Body $errorJson -ExpectedCode 422
 
 # 9. PRUEBAS DE DEMOSTRACION PARA TRIBUNAL
 Write-Header "9. PRUEBAS DE DEMOSTRACION (TRIBUNAL)"

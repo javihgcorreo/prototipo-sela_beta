@@ -1,258 +1,4 @@
-
-
-
-# 🛡️ Sistema SeLA: Smart Enforcement of Licensing Agreements
-
-**Prototipo de Gestión de Licencias de Datos con Cumplimiento Automático del RGPD**
-
-Este sistema es un entorno de microservicios diseñado para garantizar que el intercambio de datos entre entidades (ej. Hospitales y centros de investigación) se realice bajo acuerdos legales verificables, trazables mediante blockchain y con anonimización automática.
-
-## 🚀 Inicio Rápido
-Aquí tienes las instrucciones paso a paso, redactadas de forma clara y profesional para que cualquiera (incluido el tribunal) pueda poner en marcha tu TFM en menos de un minuto.
-
-Puedes copiar este bloque directamente en la sección **"Guía de Inicio Rápido"** de tu `README.md`:
-
----
-
-## 🚀 Instalación y Puesta en Marcha
-
-Sigue estos pasos en tu terminal para desplegar el entorno completo y ejecutar la prueba de concepto:
-
-### 1. Clonar el proyecto
-
-Primero, descarga el repositorio desde GitHub y accede a la carpeta del proyecto:
-
-```powershell
-git clone https://github.com/tu-usuario/nombre-del-repo-tfm.git
-cd nombre-del-repo-tfm
-
-```
-
-### 2. Configurar permisos (Solo Windows)
-
-Para poder ejecutar el script de automatización en PowerShell, asegúrate de tener permisos para ejecutar scripts locales:
-
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-```
-
-### 3. Ejecutar la Demo Automática
-
-Lanza el script principal. Este comando se encarga de limpiar contenedores antiguos, levantar los microservicios y validar el funcionamiento del sistema SeLA:
-
-```powershell
-.\probar-desde-cero.ps1
-
-```
-
----
-
-## 📋 ¿Qué esperar tras la ejecución?
-
-Una vez que el script termine (el Paso 9), verás un resumen en verde. El sistema quedará encendido y podrás acceder a las siguientes interfaces:
-
-* **Panel de Control (Demo Tribunal):** [http://localhost:8000/api/v1/demo/tribunal](https://www.google.com/search?q=http://localhost:8000/api/v1/demo/tribunal)
-*(Aquí verás que ya existe 1 acuerdo activo creado por el script).*
-* **Estado de Infraestructura:** [http://localhost:8000/api/v1/infraestructura](https://www.google.com/search?q=http://localhost:8000/api/v1/infraestructura)
-*(Verifica que todos los microservicios están conectados).*
-
----
-
-> **Nota:** El despliegue inicial puede tardar un par de minutos mientras Docker descarga las imágenes base (Python y PostgreSQL). Las ejecuciones posteriores serán casi instantáneas.
-
-### Requisitos Previos
-
-* **Docker** y **Docker Compose**
-
----
-
-## 📥 Instalación y Configuración
-
-### 1. Clonar el Repositorio
-
-Primero, descarga el código fuente del proyecto desde GitHub (o la plataforma que utilices):
-
-```bash
-git clone https://github.com/tu-usuario/nombre-del-repo-tfm.git
-cd nombre-del-repo-tfm
-
-```
-
-### 2. Estructura del Proyecto
-
-Asegúrate de que la estructura de carpetas sea la siguiente para que los scripts funcionen correctamente:
-
-```text
-/
-├── servicio-sela/       # Microservicio principal (FastAPI)
-├── servicio-auditoria/  # Registro de logs y blockchain (Python/Flask)
-├── servicio-anon/       # Procesamiento de datos (Python/Flask)
-├── docker-compose.yml   # Orquestación de contenedores
-└── probar-desde-cero.ps1 # Script de validación automática
-
-```
-
-### 3. Requisitos de Ejecución
-
-* **Docker Desktop:** Instalado y en ejecución.
-* **Permisos de PowerShell:** Para ejecutar el script de prueba en Windows, es posible que necesites habilitar la ejecución de scripts localmente:
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-
-### 💡 Por qué es importante el paso del `Set-ExecutionPolicy`
-
-Muchos tribunales usan ordenadores con políticas de seguridad que bloquean scripts `.ps1` por defecto. Al poner este comando en el README, les ahorras el error de "este script no puede cargarse porque la ejecución de scripts está deshabilitada", lo cual te hace quedar muy profesional y previsor.
-
-**¿Quieres que añada también una sección de "Prerrequisitos" con los enlaces de descarga de Docker por si el tribunal no lo tiene instalado?**
-### Despliegue del Sistema
-
-Para levantar toda la infraestructura (API Principal, Anonimización, Auditoría y Base de Datos), ejecuta:
-
-```bash
-docker-compose up --build -d
-
-```
-
-### Prueba de Concepto Automática
-
-He incluido un script que limpia el sistema, levanta los servicios y crea un acuerdo de prueba para verificar que todo el flujo funciona:
-
-```powershell
-./probar-desde-cero.ps1
-
-```
-
----
-
-## 🏗️ Arquitectura de Microservicios
-
-| Servicio | Puerto | Descripción |
-| --- | --- | --- |
-| **SELA-Main** | `8000` | Núcleo del sistema. Gestión de acuerdos y orquestación. |
-| **Anonimización** | `8001` | Procesamiento de datos sensibles (Hashing/Ruido). |
-| **Auditoría** | `8002` | Registro persistente con integridad Blockchain. |
-| **PostgreSQL** | `5432` | Almacenamiento de logs de auditoría y hashes de bloques. |
-
----
-
-## 🛠️ Funcionalidades Clave para la Defensa
-
-### 1. Creación de Acuerdos Inteligentes
-
-Valida automáticamente los parámetros del RGPD (Base legal, finalidad, nivel de anonimización) antes de emitir un ID de acuerdo único.
-
-### 2. Trazabilidad Blockchain
-
-Cada operación registrada en el servicio de auditoría genera un hash vinculado al anterior, creando una cadena de bloques en la base de datos que garantiza la **no repudiación** de las acciones.
-
-### 3. Service Discovery (Infraestructura)
-
-El sistema permite visualizar el estado de salud de todos los microservicios desde un único endpoint:
-👉 `GET http://localhost:8000/api/v1/infraestructura`
-
-### 4. Panel de Control (Tribunal Demo)
-
-Resumen en tiempo real del estado del sistema para demostración:
-👉 `GET http://localhost:8000/api/v1/demo/tribunal`
-
----
-
-## 📝 Comandos Útiles de Depuración
-
-* **Ver logs de todos los servicios:** `docker-compose logs -f`
-* **Reiniciar un servicio específico:** `docker-compose restart servicio-sela`
-* **Acceder a la base de datos de auditoría:**
-```bash
-docker exec -it sela-postgres psql -U auditoria_user -d auditoria_db
-
-```
-
-
-
----
-
-## ⚖️ Licencia
-
-Este proyecto ha sido desarrollado como parte del Trabajo de Fin de Máster (TFM). Todos los derechos reservados.
-
----
-¡Perfecto! Ya tienes el motor funcionando. Para que el **README.md** sea de 10, aquí tienes unos bloques adicionales que resumen la lógica de **anonimización** y el **blockchain**, que son los puntos donde el tribunal te hará más preguntas:
-
----
-
-### 📂 Estructura sugerida para el README (Continuación)
-
-### 🛡️ Lógica de Anonimización (Cumplimiento RGPD)
-
-El servicio de anonimización aplica diferentes técnicas según el tipo de dato detectado en el JSON:
-
-* **Identificadores Directos (Nombre, DNI, Email):** Aplica un hash `SHA-256` truncado con prefijo `ANON_`. Esto permite la seudonimización (reutilizar el mismo ID para el mismo paciente sin revelar su identidad).
-* **Datos Cuantitativos (Edad, Salario):** Aplica una técnica de **Ruido Diferencial**, modificando el valor original en un rango de  para proteger la privacidad individual mientras se mantiene la validez estadística para investigación.
-
-### ⛓️ Integridad mediante Blockchain
-
-El microservicio de **Auditoría** implementa una estructura de cadena de bloques (Blockchain) almacenada en PostgreSQL:
-
-1. Cada log de actividad se vincula a un bloque.
-2. Cada bloque contiene el `Hash` del bloque anterior.
-3. **Garantía:** Si un administrador intentara borrar un log de la base de datos, la cadena de hashes se rompería, dejando evidencia inmediata de la manipulación.
-
----
-Para el archivo **`probar-desde-cero.ps1`**, las instrucciones en el `README.md` deben resaltar que no es solo un script de test, sino la **herramienta de despliegue y validación automática** de tu TFM.
-
-Aquí tienes el bloque específico para las instrucciones del script:
-
----
-
-### 🧪 Validación del Prototipo (Script de Prueba)
-
-Para facilitar la evaluación del tribunal, se ha incluido un script de automatización en PowerShell que realiza un ciclo completo de vida del sistema.
-
-#### **Instrucciones de ejecución:**
-
-1. Abre una terminal de **PowerShell** como administrador.
-2. Ejecuta el script:
-```powershell
-.\probar-desde-cero.ps1
-
-```
-
-
-
-#### **¿Qué hace este script? (Flujo de la Demo):**
-
-El script automatiza los 9 pasos críticos que demuestran la robustez del sistema:
-
-1. **Limpieza:** Elimina contenedores y volúmenes previos para asegurar una prueba "limpia".
-2. **Verificación de Código:** Comprueba que los archivos del núcleo (FastAPI) están presentes.
-3. **Despliegue:** Levanta la infraestructura mediante `docker-compose`.
-4. **Health Check:** Espera a que los 3 microservicios y la base de datos estén operativos.
-5. **Prueba de Conectividad:** Verifica los endpoints de salud de cada componente.
-6. **Creación de Acuerdo (Núcleo TFM):** Envía un JSON con un acuerdo de compartición de datos. **Aquí es donde se valida el RGPD.**
-7. **Persistencia:** Confirma que el acuerdo ha sido almacenado y tiene un ID único.
-8. **Auditoría:** Verifica que el Servicio de Auditoría ha registrado la creación del acuerdo.
-9. **Resumen Final:** Muestra las URLs clave para que el tribunal pueda ver los resultados en el navegador.
-
----
-
-### 💡 Nota técnica para el README sobre el script:
-
-> **Importante:** El script utiliza el comando `Invoke-RestMethod` de PowerShell para interactuar con la API REST. Si el sistema devuelve un **Error 400**, el script está diseñado para capturar la excepción y mostrar el detalle del error de validación de Pydantic (FastAPI), facilitando la depuración en tiempo real durante la defensa.
-
----
-
-
-> **Estado actual:** ✅ Funcional (Fase Beta)
-> * Orquestación: Docker Compose
-> * Comunicación: REST API (Httpx / Flask / FastAPI)
-> * Persistencia: PostgreSQL 15
-> 
-> 
-
----
-
+¡Excelente! Vamos a preparar todo para subir al repositorio. Aquí está el plan completo:
 
 ## 📁 **ESTRUCTURA FINAL DEL REPOSITORIO:**
 
@@ -290,6 +36,17 @@ prototipo-sela_beta/
 └── 📄 INSTALACION.md               # Guía de instalación detallada
 ```
 
+## 📄 **1. ARCHIVO docker-compose.yml (final):**
+
+```yaml
+
+```
+
+## 📄 **2. ARCHIVO .gitignore:**
+
+```gitignore
+
+```env
 
 
 ## 📄 **4. ARCHIVO README.md:**
@@ -327,24 +84,16 @@ git clone https://github.com/tu-usuario/prototipo-sela_beta.git
 cd prototipo-sela_beta
 ```
 
-### Requisitos de Ejecución
-Docker Desktop: Instalado y en ejecución.
-
-Permisos de PowerShell: Para ejecutar el script de prueba en Windows, es posible que necesites habilitar la ejecución de scripts localmente:
-
-PowerShell
-```Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser```
-
 ### 2. Reconstruir sistema completo:
 **Windows:**
 ```powershell
-.\probar-desde-cero.ps1
+.\reconstruir-completo.ps1
 ```
 
 **Linux/Mac:**
 ```bash
 chmod +x reconstruir-completo-linux.sh
-./probar-desde-cero.sh
+./reconstruir-completo-linux.sh
 ```
 
 ### 3. Ejecutar pruebas del TFM:

@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 import uuid
+import hashlib
 from datetime import datetime
 import httpx
 
@@ -25,6 +26,7 @@ class AcuerdoRequest(BaseModel):
     nivel_anonimizacion: str
     duracion_horas: int
     volumen_maximo: int
+    metadata: Optional[Dict[str, Any]] = None
 
 class OperacionRequest(BaseModel):
     operacion: str
@@ -32,6 +34,7 @@ class OperacionRequest(BaseModel):
     parametros: dict
 
 # Endpoints básicos (que ya tienes)
+@app.get("/health")
 @app.get("/api/v1/health")
 async def health_check():
     return {"status": "healthy", "service": "sela", "timestamp": datetime.now().isoformat()}
@@ -75,25 +78,49 @@ async def demo_tribunal():
     }
 
 @app.post("/api/v1/acuerdo/crear")
-async def crear_acuerdo(acuerdo: AcuerdoRequest):
-    acuerdo_id = str(uuid.uuid4())
-    acuerdo_data = {
-        "id": acuerdo_id,
-        "nombre": acuerdo.nombre,
-        "partes": acuerdo.partes.dict(),
-        "tipo_datos": acuerdo.tipo_datos,
-        "finalidad": acuerdo.finalidad,
-        "base_legal": acuerdo.base_legal,
-        "nivel_anonimizacion": acuerdo.nivel_anonimizacion,
-        "duracion_horas": acuerdo.duracion_horas,
-        "volumen_maximo": acuerdo.volumen_maximo,
-        "fecha_creacion": datetime.now().isoformat(),
-        "estado": "activo",
-        "hash": f"hash_{uuid.uuid4().hex[:16]}"
-    }
+async def crear_acuerdo(request: AcuerdoRequest):
+    try:
+        acuerdo_id = str(uuid.uuid4())
+        # Creamos el objeto acuerdo para la DB en memoria
+        nuevo_acuerdo = {
+            "id": acuerdo_id,
+            "timestamp": datetime.now().isoformat(),
+            "estado": "activo",
+            "hash": hashlib.sha256(acuerdo_id.encode()).hexdigest()[:16],
+            **request.dict()
+        }
+        
+        acuerdos_db[acuerdo_id] = nuevo_acuerdo
+        
+        # OJO: El script espera una respuesta con esta estructura:
+        # $acuerdo.acuerdo.id
+        return {
+            "status": "success",
+            "acuerdo": nuevo_acuerdo
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# @app.post("/api/v1/acuerdo/crear")
+# async def crear_acuerdo(acuerdo: AcuerdoRequest):
+#     acuerdo_id = str(uuid.uuid4())
+#     acuerdo_data = {
+#         "id": acuerdo_id,
+#         "nombre": acuerdo.nombre,
+#         "partes": acuerdo.partes.dict(),
+#         "tipo_datos": acuerdo.tipo_datos,
+#         "finalidad": acuerdo.finalidad,
+#         "base_legal": acuerdo.base_legal,
+#         "nivel_anonimizacion": acuerdo.nivel_anonimizacion,
+#         "duracion_horas": acuerdo.duracion_horas,
+#         "volumen_maximo": acuerdo.volumen_maximo,
+#         "fecha_creacion": datetime.now().isoformat(),
+#         "estado": "activo",
+#         "hash": f"hash_{uuid.uuid4().hex[:16]}"
+#     }
     
-    acuerdos_db[acuerdo_id] = acuerdo_data
-    return {"acuerdo": acuerdo_data}
+#     acuerdos_db[acuerdo_id] = acuerdo_data
+#     return {"acuerdo": acuerdo_data}
 
 @app.get("/api/v1/acuerdo/{acuerdo_id}/estado")
 async def estado_acuerdo(acuerdo_id: str):

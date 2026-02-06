@@ -1,0 +1,59 @@
+﻿======================================================
+   REPORTE DE PRUEBAS - SISTEMA SeLA TFM (Windows)
+   Fecha: 02/06/2026 04:48:50
+   Tiempo ejecucion: 69,81 segundos
+======================================================
+
+RESUMEN:
+  Total pruebas: 24
+  Pruebas exitosas: 1
+  Pruebas fallidas: 20
+  Porcentaje exito: 4%
+
+DETALLE DE PRUEBAS:
+  PASS: Docker funcionando
+  FAIL: Servicio SELA corriendo - No responde en puerto 8000
+  FAIL: Servicio Anonimizacion corriendo - No responde en puerto 8001
+  FAIL: Servicio Auditoria corriendo - No responde en puerto 8002
+  FAIL: Endpoint de infraestructura - Codigo  (esperado 200)
+  FAIL: Creacion de acuerdo - Codigo  (esperado 200)
+  FAIL: Listado de acuerdos - Codigo  (esperado 200)
+  FAIL: Consulta de acuerdo - No hay ID de acuerdo disponible
+  FAIL: Validacion RGPD - No hay acuerdo para validar
+  FAIL: Minimizacion de datos - Codigo  (esperado 200)
+  FAIL: Servicio de anonimizacion - Codigo  (esperado 200)
+  FAIL: K-anonimity - Codigo  (esperado 200)
+  FAIL: Registro auditoria - No hay acuerdo para auditoria
+  FAIL: Consulta logs - Codigo  (esperado 200)
+  FAIL: Generacion de reporte - Codigo  (esperado 200)
+  FAIL: Estado de operaciones - Codigo  (esperado 200)
+  FAIL: Health check completo - Codigo  (esperado 200)
+  FAIL: Error en acuerdo invalido - Codigo  (esperado 422)
+  FAIL: Demo para tribunal - Codigo  (esperado 200)
+  FAIL: Estadisticas - Codigo  (esperado 200)
+  FAIL: Documentacion - Codigo  (esperado 200)
+
+ENDPOINTS VERIFICADOS:
+  - SELA API: http://localhost:8000
+  - Anonimizacion: http://localhost:8001
+  - Auditoria: http://localhost:8002
+
+COMPONENTES PROBADOS:
+  1. Infraestructura (Service Discovery)
+  2. Gestion de Acuerdos SeLA
+  3. Validacion RGPD Automatica
+  4. Servicio de Anonimizacion
+  5. Sistema de Auditoria
+  6. Ejecucion de Operaciones
+  7. Resiliencia y Manejo de Errores
+  8. Demostracion para Tribunal
+
+RECOMENDACIONES:
+  [ADVERTENCIA] Revisar los componentes que fallaron   [ADVERTENCIA] Verificar logs de error en Docker   [ADVERTENCIA] Realizar pruebas manuales adicionales
+
+PARA LA DEFENSA:
+  1. Mostrar demo en: http://localhost:8000/api/v1/demo/tribunal
+  2. Mostrar documentacion: http://localhost:8000/api/v1/docs
+  3. Mostrar estadisticas: http://localhost:8000/api/v1/estadisticas
+  4. Ejecutar prueba de anonimizacion en vivo
+  5. Mostrar logs de auditoria en tiempo real

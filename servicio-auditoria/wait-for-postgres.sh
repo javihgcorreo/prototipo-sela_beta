@@ -24,5 +24,6 @@ for i in {1..30}; do
   fi
 done
 
-echo "🚀 Iniciando aplicación..."
-exec python app.py
+echo "🚀 Iniciando aplicación con FastAPI/Uvicorn..."
+# CAMBIO CLAVE: Usar uvicorn para lanzar la aplicación asíncrona
+exec uvicorn app:app --host 0.0.0.0 --port 8002

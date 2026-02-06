@@ -75,21 +75,22 @@ foreach ($svc in $services) {
 }
 
 Write-Step "6" "CREANDO ACUERDO SeLA (NÚCLEO TFM)"
-$acuerdoJson = @'
-{
-    "nombre": "PRUEBA DESDE CERO - TFM SeLA",
-    "partes": {
-        "proveedor": "Hospital de Pruebas",
-        "consumidor": "Laboratorio de Investigación TFM"
-    },
-    "tipo_datos": "datos_salud_fhir",
-    "finalidad": "investigacion_cientifica",
-    "base_legal": "consentimiento",
-    "nivel_anonimizacion": "alto",
-    "duracion_horas": 720,
-    "volumen_maximo": 10000
+# Creamos el objeto directamente y luego lo convertimos a JSON
+$acuerdoObj = @{
+    nombre = "PRUEBA DESDE CERO - TFM SeLA"
+    partes = @{
+        proveedor = "Hospital de Pruebas"
+        consumidor = "Laboratorio de Investigacion TFM"
+    }
+    tipo_datos = "datos_salud_fhir"
+    finalidad = "investigacion_cientifica"
+    base_legal = "consentimiento"
+    nivel_anonimizacion = "alto"
+    duracion_horas = 720
+    volumen_maximo = 10000
 }
-'@
+
+$acuerdoJson = $acuerdoObj | ConvertTo-Json -Depth 5
 
 try {
     $acuerdo = Invoke-RestMethod `
@@ -99,15 +100,17 @@ try {
         -ContentType "application/json" `
         -TimeoutSec 10
     
-    Write-Host "   ✅ ACUERDO CREADO" -ForegroundColor Green
+    Write-Host "    ✅ ACUERDO CREADO" -ForegroundColor Green
     Write-Host "      ID: $($acuerdo.acuerdo.id)" -ForegroundColor Cyan
     Write-Host "      Hash: $($acuerdo.acuerdo.hash)" -ForegroundColor Gray
     
     $acuerdoId = $acuerdo.acuerdo.id
-    
 } catch {
-    Write-Host "   ❌ ERROR CREANDO ACUERDO" -ForegroundColor Red
-    Write-Host "      $($_.Exception.Message)" -ForegroundColor Gray
+    # Aquí capturamos el detalle del error 400 si FastAPI nos da pistas
+    $streamReader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+    $errorDetail = $streamReader.ReadToEnd()
+    Write-Host "    ❌ ERROR CREANDO ACUERDO" -ForegroundColor Red
+    Write-Host "      Detalle: $errorDetail" -ForegroundColor Gray
     $acuerdoId = $null
 }
 
