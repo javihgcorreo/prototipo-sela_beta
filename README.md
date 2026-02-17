@@ -423,7 +423,7 @@ El repositorio incluye scripts completos para pruebas:
    docker-compose ps
    ```
 
-2. **Crear acuerdo de prueba:**
+2. **Crear acuerdo de prueba: Válido**
    ```bash
    curl -X POST http://localhost:8000/api/v1/acuerdo/crear \
      -H "Content-Type: application/json" \
@@ -441,6 +441,32 @@ El repositorio incluye scripts completos para pruebas:
        "volumen_maximo": 1000
      }'
    ```
+   ### Resultado esperado:
+
+    SELA-Main: Devuelve un 200 OK con el ID del acuerdo generado.
+
+    ### :
+    2.1 ** Auditoría: El sistema enviará automáticamente un log al puerto 8002.**
+
+    *** Verificación: Visite http://localhost:8002/logs para comprobar que el registro se ha guardado de forma inmutable con su correspondiente Hash criptográfico.
+
+    ## 🛡️ Guía de Validación de Cumplimiento (RGPD)
+
+    Para demostrar la capacidad de **Smart Enforcement** del sistema SELA, siga estos pasos:
+
+        ### 1. Intento de creación de acuerdo con base legal NO VÁLIDA
+        Utilice Postman o cURL para intentar crear un acuerdo con una justificación jurídica no reconocida por el RGPD:
+
+        **Endpoint:** `POST http://localhost:8000/api/v1/acuerdo/crear`
+        **Body (JSON):**
+        ```json
+        {
+        "nombre": "Prueba Denegada",
+        "base_legal": "porque si",
+        "finalidad": "test"
+        }
+    ```
+    Resultado esperado: El sistema devolverá un error 400 Bad Request indicando que la base legal no es lícita, bloqueando la operación.
 
 3. **Mostrar demo interactiva:**
    ```bash
