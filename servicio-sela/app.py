@@ -1,10 +1,20 @@
+
+from enum import Enum
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator # Importante añadir field_validator
 from typing import Optional, Dict, List, Any
 import uuid
 import hashlib
 from datetime import datetime
 import httpx
+
+class BaseLegalRGPD(str, Enum):
+    CONSENTIMIENTO = "consentimiento"
+    CONTRATO = "contrato"
+    OBLIGACION_LEGAL = "obligacion_legal"
+    INTERES_VITAL = "interes_vital"
+    INTERES_PUBLICO = "interes_publico"
+    INTERES_LEGITIMO = "interes_legitimo"
 
 app = FastAPI(title="Sistema SeLA - API Principal")
 
@@ -27,6 +37,13 @@ class AcuerdoRequest(BaseModel):
     duracion_horas: int
     volumen_maximo: int
     metadata: Optional[Dict[str, Any]] = None
+
+    @field_validator('base_legal')
+    @classmethod
+    def validar_base_legal(cls, v):
+        if v not in [base.value for base in BaseLegalRGPD]:
+            raise ValueError(f"Base legal '{v}' no es válida según el RGPD. Opciones: {[b.value for b in BaseLegalRGPD]}")
+        return v
 
 class OperacionRequest(BaseModel):
     operacion: str
@@ -78,28 +95,65 @@ async def demo_tribunal():
     }
 
 @app.post("/api/v1/acuerdo/crear")
-async def crear_acuerdo(request: AcuerdoRequest):
+async def crear_acuerdo(payload: dict): # Usamos payload para evitar conflictos con la palabra 'request'
     try:
+        # 1. Definimos las bases legales válidas
+        bases_validas = [
+            "consentimiento", 
+            "contrato", 
+            "obligacion_legal", 
+            "interes_vital", 
+            "interes_publico", 
+            "interes_legitimo"
+        ]
+
+        # 2. Extraemos la base legal del JSON que viene de Postman
+        # .get() evita que el código explote si el campo no viene
+        base_enviada = payload.get('base_legal')
+
+        # 3. VALIDACIÓN PROFESIONAL
+        if base_enviada not in bases_validas:
+            return {
+                "status": "error",
+                "mensaje": f"Violación de política RGPD: '{base_enviada}' no es una base jurídica válida.",
+                "opciones_permitidas": bases_validas
+            }, 400 # Enviamos un código de error 400 (Bad Request)
+
+        # 4. Si la base es válida, generamos el acuerdo
         acuerdo_id = str(uuid.uuid4())
-        # Creamos el objeto acuerdo para la DB en memoria
         nuevo_acuerdo = {
             "id": acuerdo_id,
             "timestamp": datetime.now().isoformat(),
             "estado": "activo",
             "hash": hashlib.sha256(acuerdo_id.encode()).hexdigest()[:16],
-            **request.dict()
+            **payload # Esto mete todos los datos que enviaste en el acuerdo
         }
         
+        # --- NUEVO: ENVIAR A AUDITORÍA ---
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    "http://servicio-auditoria:8002/registrar", # Nombre del servicio en Docker
+                    json={
+                        "operacion": "CREACION_ACUERDO",
+                        "detalles": f"Nuevo acuerdo creado con ID {acuerdo_id}",
+                        "base_legal": nuevo_acuerdo["base_legal"]
+                    }
+                )
+        except Exception as e:
+            print(f"Error enviando a auditoría: {e}")
+        # ---------------------------------
+
+        # Guardamos en tu base de datos en memoria (o donde lo tengas)
         acuerdos_db[acuerdo_id] = nuevo_acuerdo
         
-        # OJO: El script espera una respuesta con esta estructura:
-        # $acuerdo.acuerdo.id
         return {
             "status": "success",
             "acuerdo": nuevo_acuerdo
         }
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"status": "error", "detalle": str(e)}, 500
 
 # @app.post("/api/v1/acuerdo/crear")
 # async def crear_acuerdo(acuerdo: AcuerdoRequest):

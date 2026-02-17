@@ -3,6 +3,7 @@ import hashlib
 import uuid
 from datetime import datetime
 import os
+from enum import Enum
 
 app = Flask(__name__)
 
