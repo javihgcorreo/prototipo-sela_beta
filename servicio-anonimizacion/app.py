@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import requests
 import hashlib
 import uuid
 from datetime import datetime
@@ -7,7 +8,7 @@ from enum import Enum
 
 app = Flask(__name__)
 
-# Configuración del servicio
+# Configuración del servicio 
 SERVICE_NAME = "Servicio de Anonimización"
 VERSION = "1.0.0"
 
@@ -51,37 +52,49 @@ def health_check():
 
 @app.route('/anonimizar', methods=['POST'])
 def anonimizar():
-    """
-    Endpoint principal para anonimizar datos
-    """
     try:
-        # Verificar que se envíen datos JSON
         if not request.is_json:
+            return jsonify({'error': 'Content-Type debe ser application/json'}), 400
+        
+        # 1. Obtener el cuerpo completo
+        cuerpo = request.get_json()
+        if not cuerpo:
+            return jsonify({'error': 'No se proporcionaron datos'}), 400
+        
+        # 2. Extraer el acuerdo_id y ELIMINARLO de los datos a anonimizar
+        # Usamos .pop() para que 'acuerdo_id' no entre en la lógica de anonimización
+        acuerdo_id = cuerpo.pop('acuerdo_id', None)
+
+        if not acuerdo_id:
             return jsonify({
-                'error': 'Content-Type debe ser application/json'
-            }), 400
+                'status': 'error',
+                'mensaje': 'BLOQUEADO: No se puede anonimizar sin un acuerdo_id vinculado (RGPD)'
+            }), 403
+
+        # 3. Anonimizar lo que queda en el diccionario (nombre, email, etc.)
+        datos_anonimizados = anonimizar_datos(cuerpo)
         
-        datos = request.get_json()
-        
-        # Validar que existan datos
-        if not datos:
-            return jsonify({
-                'error': 'No se proporcionaron datos para anonimizar'
-            }), 400
-        
-        # Generar ID único para la operación
-        operacion_id = str(uuid.uuid4())
-        
-        # Anonimizar los datos
-        datos_anonimizados = anonimizar_datos(datos)
-        
-        # Preparar respuesta
+        # 4. Notificar al servicio principal (8000)
+        notificacion_estado = "pendiente"
+        try:
+            # IMPORTANTE: Asegúrate que 'servicio-sela' es el nombre en tu docker-compose.yml
+            url_incrementar = f"http://servicio-sela:8000/api/v1/acuerdo/{acuerdo_id}/incrementar"
+            r = requests.post(url_incrementar, timeout=2)
+            
+            if r.status_code == 200:
+                notificacion_estado = "exito"
+            else:
+                notificacion_estado = f"error_8000_status_{r.status_code}"
+        except Exception as e:
+            notificacion_estado = f"error_conexion_{str(e)}"
+
+        # 5. Preparar respuesta final
         respuesta = {
-            'operacion_id': operacion_id,
+            'operacion_id': str(uuid.uuid4()),
             'timestamp': datetime.now().isoformat(),
             'status': 'success',
-            'mensaje': 'Datos anonimizados correctamente',
-            'datos_originales_count': len(datos),
+            'acuerdo_vinculado': acuerdo_id,
+            'registro_contador': notificacion_estado, # <--- MIRA ESTO EN POSTMAN
             'datos_anonimizados': datos_anonimizados,
             'servicio': SERVICE_NAME
         }
@@ -90,12 +103,10 @@ def anonimizar():
         
     except Exception as e:
         return jsonify({
-            'error': f'Error interno del servidor: {str(e)}',
-            'timestamp': datetime.now().isoformat(),
-            'servicio': SERVICE_NAME
+            'error': f'Error interno: {str(e)}',
+            'timestamp': datetime.now().isoformat()
         }), 500
-
-
+    
 # --- NUEVO ENDPOINT PARA CORREGIR EL ERROR 404 ---
 @app.route('/verificar/k-anonimity', methods=['POST'])
 def verificar_k_anonimity():

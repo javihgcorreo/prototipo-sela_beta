@@ -78,6 +78,10 @@ async def infraestructura():
 
 @app.get("/api/v1/demo/tribunal")
 async def demo_tribunal():
+    # Sumamos los contadores de cada acuerdo.  
+    # Solo subirá cuando el servicio 8001 llame a /incrementar.
+    total_usos_datos = sum(acc.get("operaciones_ejecutadas", 0) for acc in acuerdos_db.values())
+    
     return {
         "titulo": "DEMO SISTEMA SeLA - TFM",
         "autor": "Tu Nombre",
@@ -125,6 +129,7 @@ async def crear_acuerdo(payload: dict): # Usamos payload para evitar conflictos 
             "id": acuerdo_id,
             "timestamp": datetime.now().isoformat(),
             "estado": "activo",
+            "operaciones_ejecutadas": 0,  # <--- INICIALIZAMOS A CERO SIEMPRE
             "hash": hashlib.sha256(acuerdo_id.encode()).hexdigest()[:16],
             **payload # Esto mete todos los datos que enviaste en el acuerdo
         }
@@ -221,6 +226,39 @@ async def obtener_acuerdo(acuerdo_id: str):
     if acuerdo_id in acuerdos_db:
         return {"acuerdo": acuerdos_db[acuerdo_id]}
     raise HTTPException(status_code=404, detail="Acuerdo no encontrado")
+
+@app.post("/api/v1/acuerdo/{acuerdo_id}/incrementar")
+async def incrementar_operacion(acuerdo_id: str):
+    # Verificamos si el ID existe en tu diccionario global
+    if acuerdo_id in acuerdos_db:
+        # Accedemos al diccionario interno del acuerdo
+        acuerdo = acuerdos_db[acuerdo_id]
+        
+        # Incrementamos el contador (asegurándonos de que existe)
+        actual = acuerdo.get("operaciones_ejecutadas", 0)
+        acuerdos_db[acuerdo_id]["operaciones_ejecutadas"] = actual + 1
+
+        # 2. NUEVO: Creamos un registro de evidencia en operaciones_db
+        # Esto es lo que hará que len(operaciones_db) deje de ser 0
+        id_operacion = str(uuid.uuid4())
+        operaciones_db[id_operacion] = {
+            "acuerdo_id": acuerdo_id,
+            "timestamp": datetime.now().isoformat(),
+            "tipo": "ANONIMIZACION"
+        }
+        
+        # Log para la terminal de la demo
+        print(f"📈 [CONTADOR] Acuerdo {acuerdo_id}: {actual} -> {actual + 1}")
+        print(f"🗒️ [AUDITORIA] Nueva entrada en operaciones_db. Total: {len(operaciones_db)}")
+        
+        return {
+            "status": "success", 
+            "acuerdo": acuerdo_id,
+            "nuevo_total": acuerdos_db[acuerdo_id]["operaciones_ejecutadas"]
+        }
+    
+    # Si llegamos aquí, el ID no existe
+    raise HTTPException(status_code=404, detail=f"Acuerdo {acuerdo_id} no encontrado")
 
 @app.post("/api/v1/rgpd/validar")
 async def validar_rgpd(validacion: dict):

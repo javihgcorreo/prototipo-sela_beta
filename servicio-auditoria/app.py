@@ -10,7 +10,7 @@ import requests
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
-# --- CONFIGURACIÓN Y VARIABLES GLOBALES ---
+# --- CONFIGURACIÓN Y VARIABLES GLOBALES --- 
 app = FastAPI(
     title="Servicio de Auditoría con Blockchain SeLA",
     description="Microservicio para auditoría y logging de operaciones con integración blockchain",
